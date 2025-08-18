@@ -26,34 +26,82 @@ const divide = function(...nums) {
     }
     return quotient;
 }
-let a = 0;
-let b = 0;
-let op = "";
 const operate = function(a, b, op) {
     if (op === "+") {
-        add(a, b);
+        return add(a, b);
     } else if (op === "-") {
-        subtract(a, b);
+        return subtract(a, b);
     } else if (op === "*") {
-        multiply(a, b);
+        return multiply(a, b);
     } else if (op === "/") {
-        divide(a, b);
+        return divide(a, b);
     }
 }
 const opBtn = document.querySelectorAll(".opBtn");
+const eqBtn = document.querySelector(".eqBtn");
 const btn = document.querySelectorAll(".btn");
 const clr = document.querySelector("#clr");
 const inp = document.querySelector("input");
 btn.forEach(function(button) {
-    button.addEventListener("click", function(e) {
-        let s = e.target.textContent;
-        inp.value += s;
-    });
+    if (/^\d$/.test(button.textContent)) {
+        button.addEventListener("click", function(e) {
+            let s = e.target.textContent;
+            if (inp.dataset.justEvaluated === "true") {
+                inp.value = "";
+                inp.dataset.justEvaluated = "false";
+            }
+            inp.value += s;
+        });
+    }
 });
 clr.addEventListener("click", function(e) {
     inp.value = "";
+    inp.dataset.justEvaluated = "false";
 });
-inp.addEventListener("input", function(e) {
+opBtn.forEach(function(button) {
+    button.addEventListener("click", function(e) {
+        let s = e.target.textContent;
+        const nums = inp.value.split(/([+\-*/])/);
+        if (nums.length === 3 && nums[2] !== "") {
+            const a = Number(nums[0]);
+            const op = nums[1];
+            const b = Number(nums[2]);
+            if (op === "/" && b === 0) {
+                inp.value = "Nice try! Can't divide by 0.";
+                inp.dataset.justEvaluated = "true";
+                return;
+            }
+            let result = operate(a, b, op);
+            if (typeof result === "number" && !Number.isInteger(result)) {
+                result = Number(result.toFixed(6));
+            }
+            inp.value = result + s;
+            inp.dataset.justEvaluated = "true";
+        } else {
+            if (inp.value.length > 0 && /[+\-*/]$/.test(inp.value)) {
+                inp.value = inp.value.slice(0, -1) + s;
+            } else {
+                inp.value += s;
+            }
+        }
+    });
+});
+eqBtn.addEventListener("click", function(e) {
     const nums = inp.value.split(/([+\-*/])/);
-
+    if (nums.length === 3 && nums[2] !== "") {
+        const a = Number(nums[0]);
+        const op = nums[1];
+        const b = Number(nums[2]);
+        if (op === "/" && b === 0) {
+            inp.value = "Nice try! Can't divide by 0.";
+            inp.dataset.justEvaluated = "true";
+            return;
+        }
+        let result = operate(a, b, op);
+        if (typeof result === "number" && !Number.isInteger(result)) {
+            result = Number(result.toFixed(6));
+        }
+        inp.value = result;
+        inp.dataset.justEvaluated = "true";
+    }
 });
